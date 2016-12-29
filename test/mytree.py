@@ -26,6 +26,10 @@ treeview.heading('#0', text = 'Password')
 treeview.set('item1', 'Username', 'Happy')
 treeview.set('item2', 'Username', 'Sad')
 
+def callback(event):
+	print (treeview.selection())
+
+treeview.bind('<<TreeviewSelect>>', callback)
 
 
 root.mainloop()

@@ -27,7 +27,7 @@ def Main():
 		def __init__(self, master): 
 
 			master.title("Jimmy's password storage App")
-			master.geometry('800x600+100+100')
+			master.geometry('800x600+0+0')
 			#master.geometry('600x700')
 			master.minsize(600, 500)
 			master.configure(background='grey')
@@ -127,26 +127,76 @@ def Main():
 				self.treeview.set('{}'.format(a.company), 'usernamec', '{}'.format(a.username))
 				self.treeview.set('{}'.format(a.company), 'passwordc', '{}'.format(a.password))
 
+			global current
+			current = ""
+
+			def create_button(event): 
+				pass
+			def current_selection(event):
+				print ('Selected:', self.treeview.selection()[0])
+				temp =  (self.treeview.selection()[0])
+				print (self.treeview.set(temp, 'passwordc'))
+				self.shown.delete(0,END)
+				self.shown.insert(END, self.treeview.set(temp, 'passwordc'))
+
+			self.treeview.bind('<<TreeviewSelect>>', current_selection)
 
 			#BOTTOM MENU
 			#style.configure('TEntry')
+			def extract(entry): 
+				#INSERT DECRYPTION CODE HERE
+				pass
 
 			self.bmenu = Frame(self.secondframe)
 			self.bmenu.pack(fill=BOTH, expand=1, padx=20)
 
-			self.decrypt = ttk.Button(self.bmenu, text="Decrypt",compound=RIGHT)
+			self.decrypt = ttk.Button(self.bmenu, text="Decrypt",compound=RIGHT,command = lambda : extract(self.shown))
 			self.decrypt.place(relx=0.85, rely= 0.5, anchor = CENTER)
 
 			self.debutton = ImageTk.PhotoImage(Image.open('img/unlock.png').resize((20,20)))
 			self.decrypt.configure(image = self.debutton)
 
-			self.shown = ttk.Entry(self.bmenu, width = 40, state=['disabled'])
+
+			self.shown = ttk.Entry(self.bmenu, width = 40)
 			self.shown.place(relx = 0.35, rely=0.5, anchor=CENTER)
 
 
 		#BINDS:
 			master.bind('<Return>', lambda e: init_pass())
 			
+			#self.secondframe.pack_forget()		
+
+			#====#====##====#====##====#====##====#====#
+			#ADD MENU
+			#====#====##====#====##====#====##====#====#
+
+			self.ccanvas = Canvas(master, bg = 'grey')
+			#self.ccanvas.pack(fill=BOTH,expand =1)
+
+			self.create_title = Label(self.ccanvas,text='JSAFE', foreground='white', bg='grey', font=('Arial', 24,'bold'))
+			self.slogan = Label(self.ccanvas,text='Secure password storage', bg ='grey',foreground='white', font=('Arial', 12))
+			self.create_title.place(relx=0.5, rely=0.2, anchor = CENTER)
+			self.slogan.place(relx=0.5, rely=0.25, anchor = CENTER)
+
+			self.compstring = Label(self.ccanvas, fg = 'white', bg = 'grey',text = 'Company *', font = ('Arial', 15))
+			self.userstring = Label(self.ccanvas, fg = 'white', bg = 'grey',text = 'Username', font = ('Arial', 15))
+			self.passstring = Label(self.ccanvas, fg = 'white', bg = 'grey',text = 'Password *', font = ('Arial', 15))
+			self.notestring = Label(self.ccanvas, fg = 'red', bg = 'grey',text = '* = cumpulsory fields', font = ('Arial', 15))
+
+			self.compentry = Entry(self.ccanvas, width = 20)
+			self.userentry = Entry(self.ccanvas, width = 20)
+			self.passwordentry = Entry(self.ccanvas, width = 20)
+
+			self.compstring.place(relx=0.2, rely= 0.4, anchor = CENTER)
+			self.userstring.place(relx=0.2, rely= 0.5, anchor = CENTER)
+			self.passstring.place(relx=0.2, rely= 0.6, anchor = CENTER)
+			self.compentry.place(relx=0.5, rely= 0.4, anchor = CENTER)
+			self.userentry.place(relx=0.5, rely= 0.5, anchor = CENTER)
+			self.passwordentry.place(relx=0.5, rely= 0.6, anchor = CENTER)
+			#self.notestring.place(relx=0.5, rely= 0.8, anchor = CENTER)
+
+			self.passbutton = Button(self.ccanvas, text='Create')
+			self.passbutton.place(relx = 0.5, rely=0.65, anchor = CENTER, y=50)
 
 	root = Tk() 
 	my_app = Safe(root)
