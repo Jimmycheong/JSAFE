@@ -1,5 +1,3 @@
-#!/usr/local/bin/python3
-
 import os, random 
 from tkinter import * 
 from tkinter import ttk
@@ -7,7 +5,7 @@ from tkinter import messagebox
 from Crypto.Cipher import AES 
 from Crypto.Hash import SHA256 
 from PIL import Image, ImageTk
-from lockandkey import jencrypt, dencrypt, getKey
+from jencrypt6 import jencrypt, dencrypt, getKey
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -16,31 +14,26 @@ from jdb import Base, Epasswords, Hasht
 ##===========##
 #SESSION
 ##===========##
+engine = create_engine('sqlite:///storage.db')
+Base.metadata.bind = engine
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
+
+allentries = session.query(Epasswords).all()
+myhash = session.query(Hasht).one()
 
 def Main():
 
-	#Recalibrates directory
-	#os.chdir(os.path.dirname(__file__))
-
-	engine = create_engine('sqlite:///storage.db')
-	Base.metadata.bind = engine
-	DBSession = sessionmaker(bind=engine)
-	session = DBSession()
-
-	allentries = session.query(Epasswords).all()
-	myhash = session.query(Hasht).first()
-		
 	class Safe:
 
 		def __init__(self, master): 
 
 			master.title("Jimmy's password storage App")
-			master.geometry('800x600+100+100') 
-			#master.geometry('600x700') #Test geometry
+			#master.geometry('800x600+0+0')
+			master.geometry('600x700')
 			master.minsize(600, 500)
 			master.configure(background='grey')
 			#master.resizable(False,False)
-
 
 		#====#====##====#====##====#====##====#====#
 		#INITIAL SCREEN - AUTHENTICATION  

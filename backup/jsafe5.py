@@ -5,10 +5,11 @@ from tkinter import messagebox
 from Crypto.Cipher import AES 
 from Crypto.Hash import SHA256 
 from PIL import Image, ImageTk
+from jencrypt6 import jencrypt, dencrypt, getKey
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from jdb import Base, Epasswords
+from jdb import Base, Epasswords, Hasht
 
 ##===========##
 #SESSION
@@ -19,7 +20,8 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 allentries = session.query(Epasswords).all()
-
+myhash = session.query(Hasht).one()
+print(type(myhash.hash))
 
 def Main():
 
@@ -28,26 +30,26 @@ def Main():
 		def __init__(self, master): 
 
 			master.title("Jimmy's password storage App")
-			master.geometry('800x600+0+0')
-			#master.geometry('600x700')
+			#master.geometry('800x600+0+0')
+			master.geometry('600x700')
 			master.minsize(600, 500)
 			master.configure(background='grey')
 			#master.resizable(False,False)
 
-			#====#====##====#====##====#====##====#====#
-			#INITIAL SCREEN 
-			#====#====##====#====##====#====##====#====#
+		#====#====##====#====##====#====##====#====#
+		#INITIAL SCREEN - AUTHENTICATION  
+		#====#====##====#====##====#====##====#====#
 			self.firstframe = Frame(master, background = 'grey')
-			#self.firstframe.pack(fill=BOTH, expand = 1) 
+			self.firstframe.pack(fill=BOTH, expand = 1) 
 
 
 			self.passlabel = Label(self.firstframe, fg = 'white', bg = 'grey',text = 'Enter your password', font = ('Arial', 24, 'bold'))
 			self.passlabel.place(relx=0.5, rely= 0.5, y=-50, anchor = CENTER)
 
-			self.passentry = Entry(self.firstframe, width = 20, show = "*")
+			self.passentry = Entry(self.firstframe, width = 20)#, show = "*")
 			self.passentry.place(relx=0.5, rely= 0.5, y= 10, anchor =CENTER)
 
-			self.passbutton = Button(self.firstframe, text='Enter')
+			self.passbutton = Button(self.firstframe, text='Enter' ,command = lambda:init_pass())
 			self.passbutton.place(relx = 0.5, rely=0.5, anchor = CENTER, y=50)
 
 			self.errormess = Label(self.firstframe, fg = 'red', bg = 'grey',text = 'Incorrect, please try again', font = ('Arial', 12))
@@ -59,20 +61,16 @@ def Main():
 			self.logolabel.configure(image = self.vault)
 
 			def init_pass():
-				print ('Enter button pressed!')
-				if self.passentry.get() != 'hello': 
-					self.passentry.delete(0,END)
-					self.errormess.place(relx=0.5, rely= 0.5, y=90, anchor = CENTER)
-				else: 
+				if getKey(self.passentry.get().encode('utf-8')) == myhash.hash: 
 					self.firstframe.pack_forget()
+					self.secondframe.pack(fill=BOTH,expand=1,padx=20,pady=20)
+				else: 
+					#self.passentry.delete(0,END)
+					self.errormess.place(relx=0.5, rely= 0.5, y=90, anchor = CENTER)
 
-			#====#====##====#====##====#====##====#====#
-			#MAIN PROGRAM 
-			#====#====##====#====##====#====##====#====#
-
-			self.add_new = Button(self.firstframe, text = 'add new')
-			self.delete_existing = Button(self.firstframe, text = 'delete')
-			self.refresh_db = Button(self.firstframe, text = 'refresh')
+		#====#====##====#====##====#====##====#====#
+		#MAIN PROGRAM 
+		#====#====##====#====##====#====##====#====#
 
 			#====#====##====#====##====#====##====#====#
 			#Second Frame
@@ -80,7 +78,7 @@ def Main():
 
 
 			self.secondframe=Frame(root)#, background = 'grey')
-			self.secondframe.pack(fill=BOTH,expand=1,padx=20,pady=20)
+			#self.secondframe.pack(fill=BOTH,expand=1,padx=20,pady=20)
 
 			self.tmenu = Frame(self.secondframe)
 			self.tmenu.pack(fill=BOTH, expand=1,padx=20)
@@ -132,15 +130,14 @@ def Main():
 			self.bmenu = Frame(self.secondframe)
 			self.bmenu.pack(fill=BOTH, expand=1, padx=20)
 
-			self.decrypt = ttk.Button(self.bmenu, text="Decrypt",compound=RIGHT,command = lambda : extract(self.shown))
-			self.decrypt.place(relx=0.85, rely= 0.5, anchor = CENTER)
-
-			self.debutton = ImageTk.PhotoImage(Image.open('img/unlock.png').resize((20,20)))
-			self.decrypt.configure(image = self.debutton)
-
-
 			self.shown = ttk.Entry(self.bmenu, width = 40)
 			self.shown.place(relx = 0.35, rely=0.5, anchor=CENTER)
+
+			self.decrypt_button = ttk.Button(self.bmenu, text="Decrypt",compound=RIGHT,command = lambda : extract(self.shown.get()))
+			self.decrypt_button.place(relx=0.85, rely= 0.5, anchor = CENTER)
+
+			self.debutton = ImageTk.PhotoImage(Image.open('img/unlock.png').resize((20,20)))
+			self.decrypt_button.configure(image = self.debutton)
 
 
 		#CALLBACKS & BINDS:
@@ -152,7 +149,9 @@ def Main():
 			def create_form():
 				if len(self.compentry.get()) != 0 and len(self.passwordentry.get()) != 0:
 					if self.compentry.get() not in allentries: 
-						new = Epasswords(company= self.compentry.get(), username = self.userentry.get(),password=self.passwordentry.get())
+						epasscreate = jencrypt(myhash.hash, self.passwordentry.get())
+						print ('EPASSLOOKSLIKE: ', epasscreate)
+						new = Epasswords(company= self.compentry.get(), username = self.userentry.get(),password=epasscreate)
 						session.add(new)
 						session.commit()			
 						self.treeview.insert('','end', '{}'.format(new.company), text='{}'.format(new.company))				
@@ -160,7 +159,6 @@ def Main():
 						self.treeview.set('{}'.format(new.company), 'passwordc', '{}'.format(new.password))
 						self.ccanvas.pack_forget()						
 						self.secondframe.pack(fill=BOTH, expand=1)
-
 			self.etemp = ""
 
 			def edit_button(): 
@@ -181,13 +179,16 @@ def Main():
 					editit.password = self.epasswordentry.get()
 					session.add(editit)
 					session.commit()			
-					self.treeview.detach(self.etemp)
-					self.treeview.insert('','end', '{}'.format(editit.company), text='{}'.format(editit.company))				
+					if editit.company != self.etemp: 
+						self.treeview.detach(self.etemp)
+						self.treeview.insert('','end', '{}'.format(editit.company), text='{}'.format(editit.company))				
 					self.treeview.set('{}'.format(editit.company), 'usernamec', '{}'.format(editit.username))
 					self.treeview.set('{}'.format(editit.company), 'passwordc', '{}'.format(editit.password))
 					self.ecanvas.pack_forget()						
 					self.secondframe.pack(fill=BOTH, expand=1)
-
+				self.ecompentry.delete(0, END)
+				self.euserentry.delete(0,END)
+				self.epasswordentry.delete(0, END)
 
 			def delete_button(event):
 				#try: 
@@ -205,11 +206,20 @@ def Main():
 			def cancel_form(canvas):
 				canvas.pack_forget()
 				self.secondframe.pack(fill =BOTH, expand=1)
+				self.ecompentry.delete(0, END)
+				self.euserentry.delete(0,END)
+				self.epasswordentry.delete(0, END)
+				self.ccompentry.delete(0, END)
+				self.cuserentry.delete(0,END)
+				self.cpasswordentry.delete(0, END)
+
+			global temp
+			temp = ""
 
 			def current_selection(event):
 				print ('Selected:', self.treeview.selection()[0])
 				temp =  (self.treeview.selection()[0])
-				print (self.treeview.set(temp, 'passwordc'))
+				print ('temp :', temp)
 				self.shown.delete(0,END)
 				self.shown.insert(END, self.treeview.set(temp, 'passwordc'))
 
@@ -217,10 +227,22 @@ def Main():
 
 			#style.configure('TEntry')
 			def extract(entry): 
-				#INSERT DECRYPTION CODE HERE
-				pass
+				selecteding = self.treeview.selection()[0]
+				print ('Temp : ', selecteding)
+				b = session.query(Epasswords).filter_by(company = selecteding).one()
+				print ('Found password: ', b.password)
+				print ('Type: ', type(b.password))
 
-			self.firstframe.bind('<Return>', lambda e: init_pass())
+				#INSERT DECRYPTION CODE HERE
+				print ('Extract beginning')
+				print ('1.', self.passentry.get())
+				#entry = entry.decode('utf-8')
+				decrypted_out = dencrypt(self.passentry.get(), b.password)
+				print (decrypted_out)
+				self.shown.delete(0,END)
+				self.shown.insert(END, decrypted_out)
+
+			self.passentry.bind('<Return>', lambda e: init_pass())
 			self.secondframe.bind('<BackSpace>', lambda e: delete_button(e))
 			
 			#self.secondframe.pack_forget()		

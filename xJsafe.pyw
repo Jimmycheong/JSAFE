@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 
 import os, random 
 from tkinter import * 
@@ -17,10 +17,14 @@ from jdb import Base, Epasswords, Hasht
 #SESSION
 ##===========##
 
+print ('CWD: ', os.getcwd())
+
+print ('Abs: ',os.path.dirname(__file__)
+)
+
 def Main():
 
-	#Recalibrates directory
-	#os.chdir(os.path.dirname(__file__))
+	os.chdir(os.path.dirname(__file__))
 
 	engine = create_engine('sqlite:///storage.db')
 	Base.metadata.bind = engine

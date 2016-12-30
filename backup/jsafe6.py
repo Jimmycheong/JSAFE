@@ -1,5 +1,3 @@
-#!/usr/local/bin/python3
-
 import os, random 
 from tkinter import * 
 from tkinter import ttk
@@ -7,7 +5,7 @@ from tkinter import messagebox
 from Crypto.Cipher import AES 
 from Crypto.Hash import SHA256 
 from PIL import Image, ImageTk
-from lockandkey import jencrypt, dencrypt, getKey
+from jencrypt6 import jencrypt, dencrypt, getKey
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -16,31 +14,27 @@ from jdb import Base, Epasswords, Hasht
 ##===========##
 #SESSION
 ##===========##
+engine = create_engine('sqlite:///storage.db')
+Base.metadata.bind = engine
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
+
+allentries = session.query(Epasswords).all()
+myhash = session.query(Hasht).one()
+print(type(myhash.hash))
 
 def Main():
 
-	#Recalibrates directory
-	#os.chdir(os.path.dirname(__file__))
-
-	engine = create_engine('sqlite:///storage.db')
-	Base.metadata.bind = engine
-	DBSession = sessionmaker(bind=engine)
-	session = DBSession()
-
-	allentries = session.query(Epasswords).all()
-	myhash = session.query(Hasht).first()
-		
 	class Safe:
 
 		def __init__(self, master): 
 
 			master.title("Jimmy's password storage App")
-			master.geometry('800x600+100+100') 
-			#master.geometry('600x700') #Test geometry
+			#master.geometry('800x600+0+0')
+			master.geometry('600x700')
 			master.minsize(600, 500)
 			master.configure(background='grey')
 			#master.resizable(False,False)
-
 
 		#====#====##====#====##====#====##====#====#
 		#INITIAL SCREEN - AUTHENTICATION  
@@ -156,6 +150,7 @@ def Main():
 				if len(self.compentry.get()) != 0 and len(self.passwordentry.get()) != 0:
 					if self.compentry.get() not in allentries: 
 						epasscreate = jencrypt(myhash.hash, self.passwordentry.get())
+						print ('EPASSLOOKSLIKE: ', epasscreate)
 						new = Epasswords(company= self.compentry.get(), username = self.userentry.get(),password=epasscreate)
 						session.add(new)
 						session.commit()			
@@ -201,7 +196,7 @@ def Main():
 					messagebox.askyesno(title = 'Removing {}'.format(dselected), message='Are you sure you want to remove {}?'.format(dselected))
 					deleteit = session.query(Epasswords).filter_by(company=dselected)
 					for d in deleteit: 
-						print ('Delete: ', d.company, d.username, d.password)
+						print (d.company, d.username, d.password)
 						session.delete(d)
 						session.commit()
 					self.treeview.detach(self.treeview.selection()[0])
@@ -222,18 +217,31 @@ def Main():
 			temp = ""
 
 			def current_selection(event):
+				print ('Selected:', self.treeview.selection()[0])
 				temp =  (self.treeview.selection()[0])
+				print ('temp :', temp)
 				self.shown.delete(0,END)
 				self.shown.insert(END, self.treeview.set(temp, 'passwordc'))
 
 			self.treeview.bind('<<TreeviewSelect>>', current_selection)
 
+			#style.configure('TEntry')
 			def extract(entry): 
 				selecteding = self.treeview.selection()[0]
+				print ('Temp : ', selecteding)
 				b = session.query(Epasswords).filter_by(company = selecteding).one()
+				print ('Found password: ', b.password)
+				print ('Type: ', type(b.password))
+
+				#INSERT DECRYPTION CODE HERE
+				print ('Extract beginning')
+				print ('1.', self.passentry.get())
+				#entry = entry.decode('utf-8')
 				decrypted_out = dencrypt(self.passentry.get(), b.password)
+				print (decrypted_out)
 				self.shown.delete(0,END)
 				self.shown.insert(END, decrypted_out)
+
 			self.passentry.bind('<Return>', lambda e: init_pass())
 			self.secondframe.bind('<BackSpace>', lambda e: delete_button(e))
 			
@@ -277,6 +285,8 @@ def Main():
 			#EDIT MENU
 			#====#====##====#====##====#====##====#====#
 			
+			#GHOST THE SELECTED COMPANIE'S INFORMATION in the text fields. 
+
 			self.ecanvas = Canvas(master, bg = 'grey')
 			#self.ecanvas.pack(fill=BOTH,expand =1)
 
