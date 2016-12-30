@@ -3,8 +3,8 @@
 Writing my third app! 
 - Written in Python3 
 - Tkinter Module for GUI development 
-- Total build time to v1.0: 2 days 
-- Requires installaton of following modules: pycryptography, sqlalchemy, PIL
+- Time taken to build verson 1.0: 2 days 
+- Requires installation of following modules: pycryptography, sqlalchemy, pillow
 - Encrypted passwords stored on SQLite database.
 
 # Initial authentication screen: 
