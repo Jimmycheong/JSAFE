@@ -41,7 +41,6 @@ def Main():
 			master.configure(background='grey')
 			#master.resizable(False,False)
 
-
 		#====#====##====#====##====#====##====#====#
 		#INITIAL SCREEN - AUTHENTICATION  
 		#====#====##====#====##====#====##====#====#
@@ -179,9 +178,10 @@ def Main():
 			def edit_form(currents):
 				editit = session.query(Epasswords).filter_by(company=self.etemp).one()
 				if len(self.ecompentry.get()) != 0 or len(self.epasswordentry.get()) != 0 or len(self.euserentry.get()):
+					edit_pass = jencrypt(myhash.hash, self.epasswordentry.get())
 					editit.company = self.ecompentry.get() 
 					editit.username = self.euserentry.get()
-					editit.password = self.epasswordentry.get()
+					editit.password = edit_pass
 					session.add(editit)
 					session.commit()			
 					if editit.company != self.etemp: 
