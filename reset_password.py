@@ -132,7 +132,7 @@ if __name__ == '__main__':
         print("\n")
         sys.exit()
 
-        passwords_match = False
+    passwords_match = False
 
     try:
         while passwords_match != True:

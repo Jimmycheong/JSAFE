@@ -7,7 +7,7 @@ from tkinter import messagebox
 from Crypto.Cipher import AES 
 from Crypto.Hash import SHA256 
 from PIL import Image, ImageTk
-from lockandkey import jencrypt, dencrypt, getKey
+from lockandkey import jencrypt, dencrypt, get_hashed_key
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -66,7 +66,7 @@ def Main():
 			self.logolabel.configure(image = self.vault)
 
 			def init_pass():
-				if getKey(self.passentry.get().encode('utf-8')) == myhash.hash: 
+				if get_hashed_key(self.passentry.get().encode('utf-8')) == myhash.hash: 
 					self.firstframe.pack_forget()
 					self.secondframe.pack(fill=BOTH,expand=1,padx=20,pady=20)
 				else: 
