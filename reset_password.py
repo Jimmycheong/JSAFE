@@ -9,6 +9,7 @@ Ensure all dependancies at installed beforehand.
 
 import sys
 import time
+import getpass
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from jdb import Base, Epasswords, Hasht
@@ -136,8 +137,8 @@ if __name__ == '__main__':
 
     try:
         while passwords_match != True:
-            NEW_MASTER_PASSWORD = input("Enter new master password: ")
-            CONFIRM_MASTER_PASSWORD = input("Retype new master password:")
+            NEW_MASTER_PASSWORD = getpass.getpass("Enter new master password: ")
+            CONFIRM_MASTER_PASSWORD = getpass.getpass("Retype new master password: ")
             if NEW_MASTER_PASSWORD != CONFIRM_MASTER_PASSWORD:
                 print("Passwords did not match. Please try again")
             else:

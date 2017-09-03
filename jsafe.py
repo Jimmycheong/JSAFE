@@ -53,7 +53,7 @@ def Main():
 			self.passlabel = Label(self.firstframe, fg='white', bg='grey',text='Enter your password', font=('Arial', 24, 'bold'))
 			self.passlabel.place(relx=0.5, rely=0.5, y=-50, anchor=CENTER)
 
-			self.passentry = Entry(self.firstframe, width=20)#, show = "*")
+			self.passentry = Entry(self.firstframe, width=20, show = "*")
 			self.passentry.place(relx=0.5, rely= 0.5, y=10, anchor =CENTER)
 
 			self.passbutton = Button(self.firstframe, text='Enter' ,command=lambda:init_pass())
